@@ -255,32 +255,32 @@ class TestDes {
     private final static String CRYPTO = "DES"; //定义加密算法
     private final static String CRYPTOBLOCK = "DES/CBC/PKCS5Padding"; //加密算法/工作模式/填充方式,"DESede/ECB/PKCS5Padding"
 
-    public static String encrypt(String key, String data) throws Exception {
+    public static String encrypt(String key, String data) throws Exception { //key:密钥 data:明文数据
 
         //生成一个可信任的随机数源
         SecureRandom sr = new SecureRandom();
 
-        //从原始密钥数据创建DESKeySpec对象
+        //从原始密钥数据创建DESKeySpec对象,当字符串转为字节时需要指定编码方式
         DESKeySpec dks = new DESKeySpec(key.getBytes(CODE));
 
         //创建一个密钥工厂，然后用它把DESKeySpec转换成SecretKey对象
         SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(CRYPTO);
         SecretKey securekey = keyFactory.generateSecret(dks);
 
-        //Cipher对象实际完成加密操作
+        //Cipher对象实际完成加密操作,指定加密方式
         Cipher cipher = Cipher.getInstance(CRYPTO);
 
-        //用密钥初始化Cipher对象
+        //用密钥初始化Cipher对象,指定操作为进行加密
         cipher.init(Cipher.ENCRYPT_MODE, securekey, sr);
-
+        //加数据进行编码
         byte[] bt = cipher.doFinal(data.getBytes(CODE));
-
+        //将字节数进行base64编码
         String str = new BASE64Encoder().encode(bt);
 
         return str;
     }
 
-    public static String encrypt(String key, String data,String iv) throws Exception {
+    public static String encrypt(String key, String data,String iv) throws Exception { //key:密钥 data:明文数据 iv:初始化向量
 
         //从原始密钥数据创建DESKeySpec对象
         DESKeySpec dks = new DESKeySpec(key.getBytes(CODE));
@@ -305,7 +305,7 @@ class TestDes {
         return str;
     }
 
-    public static String decrypt(String key, String data) throws Exception {
+    public static String decrypt(String key, String data) throws Exception { //key:密钥 data:密文数据
 
         // 生成一个可信任的随机数源
         SecureRandom sr = new SecureRandom();
@@ -323,6 +323,7 @@ class TestDes {
         // 用密钥初始化Cipher对象
         cipher.init(Cipher.DECRYPT_MODE, securekey, sr);
 
+        // 将密文数据进行base64的反编码
         BASE64Decoder decoder = new BASE64Decoder();
         byte[] buf = decoder.decodeBuffer(data);
 
@@ -710,6 +711,7 @@ class RSA {
         return outStr;
     }
 
+    //从文件中读取数据
     public static String loadKeyByFile(String path) throws Exception {
 
         BufferedReader br = new BufferedReader(new FileReader(path));
@@ -729,6 +731,7 @@ class RSA {
         return sb.toString();
     }
 
+    //向文件中写数据
     public static void writeKeyToFile(String path,String data) throws Exception {
 
         FileWriter fw = new FileWriter(path);
@@ -817,7 +820,8 @@ class TestSign {
 
     public static final String SIGN_ALGORITHMS = "SHA1WithRSA"; //SHA1WithRSA SHA256WithRSA MD5withRSA
 
-    public static String sign(String content, String privateKey, String encode) throws Exception {
+    //进行数字签名,用私钥进行加密,生成签名值
+    public static String sign(String content, String privateKey, String encode) throws Exception { //content:消息 privateKey:私钥 encode:编码方式
 
         PKCS8EncodedKeySpec priPKCS8 = new PKCS8EncodedKeySpec(new BASE64Decoder().decodeBuffer(privateKey));
 
@@ -834,7 +838,8 @@ class TestSign {
         return new BASE64Encoder().encode(signed);
     }
 
-    public static boolean vertify(String content, String sign, String publicKey, String encode) throws Exception {
+    //进行数字签名验证,用公钥进行解密,验证是否成功
+    public static boolean vertify(String content, String sign, String publicKey, String encode) throws Exception { //content:消息 sign:签名值 publicKey:公钥 encode:编码方式
 
         try {
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
