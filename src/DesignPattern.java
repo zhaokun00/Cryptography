@@ -1,3 +1,7 @@
+import org.omg.CORBA.PUBLIC_MEMBER;
+
+import java.util.ArrayList;
+
 /*
 * add desigin pattern example
 * */
@@ -35,12 +39,95 @@ public class DesignPattern {
         objectAdapter.fly();
     }
 
-    public static void main(String args[]) throws Exception {
+    public static void testObserver() {
+
+        StudentObserver s1 = new StudentObserver();
+        StudentObserver s2 = new StudentObserver();
+
+        TeacherSubject t = new TeacherSubject();
+
+        t.registerObserver(s1);
+        t.registerObserver(s2);
+
+        t.setName("zhaokun");
+
+        System.out.println(s1.getName());
+        System.out.println(s2.getName());
+
+        t.setName("kunzhao");
+
+        System.out.println(s1.getName());
+        System.out.println(s2.getName());
+
+    }
+
+    public static void testComposite() {
+
+        FileComposite root = new FileComposite("root");
+        DocComposite doc1 = new DocComposite("doc1");
+
+        FileComposite file1 = new FileComposite("file");
+        DocComposite doc2 = new DocComposite("doc2");
+        file1.add(doc2);
+
+        root.add(doc1);
+        root.add(file1);
+
+        root.display(1);
+
+    }
+
+    public static void testDecorator() {
+
+        A4CarDecorator A4 = new A4CarDecorator();
+
+        Decorator d1 = new GPSDecorator();
+
+        d1.setCar(A4);
+
+        WheelDecorator w1 = new WheelDecorator();
+
+        w1.setCar(d1);
+
+        System.out.println(w1.getCost());
+    }
+
+    public static void testCommand() {
+
+        WaiterInvoker w = new WaiterInvoker();
+
+        PlayCommander p = new PlayCommander();
+
+        w.setCommander(p);
+
+        w.execute();
+    }
+
+    public static void testState() {
+
+        Room room = new Room();
+        State s = new FreeState();
+
+        room.setState(s);
+
+        room.book();
+
+        room.checkin();
+
+        room.checkout();
+
+    }
+    public static void main(String args[]) {
 
 //        testSingletonHungry();
 //        testSingletonLazy();
 //        testStrategy();
-        testAdapter();
+//        testAdapter();
+//        testObserver();
+//        testComposite();
+//        testDecorator();
+//        testCommand();
+        testState();
     }
 }
 
@@ -95,7 +182,7 @@ class SingletonLay {
 
 /*********************************策略模式****************************************/
 interface IStrategy { //定义抽象策略类
-    public void printf();
+    void printf();
 }
 
 class StudentStrategy implements IStrategy { //定义具体策略实现类
@@ -130,8 +217,8 @@ class ContextStrategy { //定义环境类
 /*********************************适配器模式****************************************/
 interface IAdapter { //被确定的目标接口
 
-    public void run();
-    public void fly();
+    void run();
+    void fly();
 }
 
 class StudentAdapter { //被确定被适配者
@@ -168,3 +255,358 @@ class ObjectAdapter implements IAdapter { //对象适配器
         System.out.println("ObjectAdapter fly");
     }
 }
+
+/*********************************观察者模式****************************************/
+interface ISubject { //被观察者需要实现的接口
+    void registerObserver(IObserver o);
+    void removerObserver(IObserver o);
+    void notifyOberver();
+}
+
+interface IObserver { //观察者需要实现的接口
+    void update(Object o);
+}
+
+class TeacherSubject implements ISubject { //具体的被观察者对象
+
+    private ArrayList<IObserver> observerList = new ArrayList<IObserver>(); //被观察者对象中含有一个容器,里面装载着观察者
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) { //当被观察者发生变化是,即可通知观察者
+        this.name = name;
+
+        notifyOberver();
+    }
+
+    private String name;
+
+    @Override
+    public void registerObserver(IObserver o) {
+        observerList.add(o);
+    }
+
+    @Override
+    public void removerObserver(IObserver o) {
+        observerList.remove(o);
+    }
+
+    @Override
+    public void notifyOberver() {
+
+        int length = observerList.size();
+        for (int i = 0;i < length;i++) {
+            observerList.get(i).update(name);
+        }
+    }
+}
+
+class StudentObserver implements IObserver {
+
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void update(Object o) {
+         name = (String)o;
+    }
+}
+
+/*********************************组合模式****************************************/
+abstract class ComponentComposite {
+
+    protected String name;
+
+    public ComponentComposite(String name) {
+        this.name = name;
+    }
+
+    public abstract void add(ComponentComposite c);
+    public abstract void remove(ComponentComposite c);
+    public abstract void display(int depth);
+}
+
+class DocComposite extends ComponentComposite {
+
+    public DocComposite(String name) {
+            super(name);
+    }
+    @Override
+    public void add(ComponentComposite c) {
+        System.out.println("我是文件不能进行添加操作");
+    }
+
+    @Override
+    public void remove(ComponentComposite c) {
+        System.out.println("我是文件不能进行删除操作");
+    }
+
+    @Override
+    public void display(int depth) {
+        System.out.println(depth + name);
+    }
+}
+
+class FileComposite extends ComponentComposite {
+
+    private ArrayList<ComponentComposite> list = new ArrayList<ComponentComposite>();
+
+    public FileComposite(String name) {
+        super(name);
+    }
+
+    @Override
+    public void add(ComponentComposite c) {
+        list.add(c);
+    }
+
+    @Override
+    public void remove(ComponentComposite c) {
+        list.remove(c);
+    }
+
+    @Override
+    public void display(int depth) {
+        System.out.println(depth + name);
+        int length = list.size();
+        for (int i = 0;i < length;i++) {
+            list.get(i).display(1+depth);
+        }
+    }
+}
+
+/*********************************装饰模式****************************************/
+abstract class CarDecorator { //被装饰者
+
+    protected int cost;
+    public abstract int getCost();
+}
+
+class A4CarDecorator extends CarDecorator {
+
+    public A4CarDecorator() {
+        cost = 4;
+    }
+
+    @Override
+    public int getCost() {
+        return cost;
+    }
+}
+
+class Decorator extends CarDecorator { //装饰者
+
+    protected CarDecorator car;
+
+    @Override
+    public int getCost() {
+        return cost + car.getCost();
+    }
+
+    public void setCar(CarDecorator car) {
+        this.car = car;
+    }
+}
+
+class GPSDecorator extends Decorator {
+
+    public GPSDecorator() {
+        cost = 1;
+    }
+}
+
+class WheelDecorator extends Decorator {
+
+    public WheelDecorator() {
+        cost = 1;
+    }
+}
+
+/*********************************命令者模式****************************************/
+class WaiterInvoker { //命令传递者
+
+    private Commander commander;
+
+    public void setCommander(Commander commander) {
+        this.commander = commander;
+    }
+
+    public void execute() {
+        commander.execute();
+    }
+}
+
+interface Commander { //命令接口
+
+    void execute();
+}
+
+class PlayCommander implements Commander { //对外提供的具体命令
+
+    @Override
+    public void execute() {
+        new StudentExecuter().execute();
+    }
+}
+
+class SleepCommander implements Commander {
+
+    @Override
+    public void execute() {
+        new TeacherExecuter().execute();
+    }
+}
+
+interface RealExecuter { //真正执行命令的接口
+
+    void execute();
+}
+
+class StudentExecuter implements RealExecuter {
+
+    @Override
+    public void execute() {
+
+        System.out.println("StudentExecuter");
+    }
+}
+
+class TeacherExecuter implements RealExecuter {
+
+    @Override
+    public void execute() {
+
+        System.out.println("TeacherExecuter");
+    }
+}
+
+/*********************************状态模式****************************************/
+interface State { //定义状态接口
+    void book();
+    void unbook();
+    void checkin();
+    void checkout();
+}
+
+class FreeState implements State {
+
+    public FreeState() {
+        System.out.println("空闲状态");
+    }
+
+    @Override
+    public void book() {
+        System.out.println("当前为空闲状态正在进行预定操作");
+    }
+
+    @Override
+    public void unbook() {
+        System.out.println("当前为空闲状态不能进行取消预定操作");
+    }
+
+    @Override
+    public void checkin() {
+        System.out.println("当前为空闲状态正在进行入住操作");
+    }
+
+    @Override
+    public void checkout() {
+        System.out.println("当前为空闲状态正在进行取消入住操作");
+    }
+
+}
+
+class BookState implements State {
+
+    public BookState() {
+        System.out.println("预定状态");
+    }
+
+    @Override
+    public void book() {
+        System.out.println("当前为预定状态不能进行预定操作");
+    }
+
+    @Override
+    public void unbook() {
+        System.out.println("当前为预定状态正在进行取消预定操作");
+    }
+
+    @Override
+    public void checkin() {
+        System.out.println("当前为预定状态正在进行入住操作");
+    }
+
+    @Override
+    public void checkout() {
+        System.out.println("当前为预定状态不能进行取消入住操作");
+    }
+
+}
+
+class InState implements State {
+
+    public InState() {
+        System.out.println("入住状态");
+    }
+
+    @Override
+    public void book() {
+        System.out.println("当前为入住状态不能进行预定操作");
+    }
+
+    @Override
+    public void unbook() {
+        System.out.println("当前为入住状态不能进行取消预定操作");
+    }
+
+    @Override
+    public void checkin() {
+        System.out.println("当前为入住状态不能进行入住操作");
+    }
+
+    @Override
+    public void checkout() {
+        System.out.println("当前为入住状态正在进行取消入住操作");
+    }
+
+}
+
+class Room {
+
+    private State state;
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public void book() {
+       state.book();
+       state = new BookState();
+    }
+
+    public void unbook() {
+        state.unbook();
+        state = new FreeState();
+    }
+
+    public void checkin() {
+        state.checkin();
+        state = new InState();
+    }
+
+    public void checkout() {
+        state.checkout();
+        state = new FreeState();
+    }
+}
+
