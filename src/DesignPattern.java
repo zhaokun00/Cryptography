@@ -117,6 +117,17 @@ public class DesignPattern {
         room.checkout();
 
     }
+
+    public static void testBridge() {
+
+        BridgeColor color = new RedColor();
+        BridgePen pen = new BigBrigePen();
+
+        pen.setColor(color);
+
+        pen.printf();
+    }
+
     public static void main(String args[]) {
 
 //        testSingletonHungry();
@@ -127,7 +138,8 @@ public class DesignPattern {
 //        testComposite();
 //        testDecorator();
 //        testCommand();
-        testState();
+//        testState();
+        testBridge();
     }
 }
 
@@ -607,6 +619,64 @@ class Room {
     public void checkout() {
         state.checkout();
         state = new FreeState();
+    }
+}
+
+/*********************************桥接模式****************************************/
+
+interface BridgeColor {
+
+    void printfColor();
+}
+
+class RedColor implements BridgeColor {
+
+    @Override
+    public void printfColor() {
+        System.out.println("我是红颜色");
+    }
+}
+
+class BlackColor implements BridgeColor {
+
+    @Override
+    public void printfColor() {
+        System.out.println("我是黑颜色");
+    }
+}
+
+abstract class BridgePen {
+
+    protected  BridgeColor color;
+
+    public BridgePen(BridgeColor color) {
+        this.color = color;
+    }
+
+    public BridgePen() {}
+
+    public void setColor(BridgeColor color) {
+        this.color = color;
+    }
+
+    public abstract  void printf();
+}
+
+class BigBrigePen extends BridgePen {
+
+    @Override
+    public void printf() {
+        System.out.print("我是大号钢笔,颜色是:");
+        color.printfColor();
+    }
+}
+
+class LiteBrigePen extends BridgePen {
+
+    @Override
+    public void printf() {
+        System.out.print("我是小号钢笔,颜色是:");
+        color.printfColor();
     }
 }
 
