@@ -1,6 +1,7 @@
 import org.omg.CORBA.PUBLIC_MEMBER;
 
 import java.util.ArrayList;
+import java.util.Vector;
 
 /*
 * add desigin pattern example
@@ -680,3 +681,89 @@ class LiteBrigePen extends BridgePen {
     }
 }
 
+/*********************************迭代器模式****************************************/
+class Menu {
+    private String id;
+    private String name;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+
+interface Iterator {
+
+    Menu first();
+    Menu next();
+    boolean isDone();
+}
+
+class ImplIterator implements Iterator {
+
+    ArrayList<Menu> list;
+    int current = 0;
+
+    public ImplIterator(ArrayList<Menu> l) {
+        list = l;
+    }
+
+    @Override
+    public Menu first() {
+        current = 0;
+        return list.get(current);
+    }
+
+    @Override
+    public Menu next() {
+        current++;
+        return list.get(current);
+    }
+
+    @Override
+    public boolean isDone() {
+        return current > (list.size()-1);
+    }
+}
+
+interface TV {
+    Iterator getIterator();
+}
+
+class HaierTV implements TV {
+
+    ArrayList<Menu> list;
+
+    public HaierTV() {
+        list = new ArrayList<Menu>();
+
+        Menu men1 = new Menu();
+        men1.setId("1");
+        men1.setName("zhao1");
+
+        list.add(men1);
+
+        Menu men2 = new Menu();
+        men1.setId("2");
+        men1.setName("zhao2");
+
+        list.add(men2);
+
+    }
+
+    @Override
+    public Iterator getIterator() {
+        return new ImplIterator(list);
+    }
+}
